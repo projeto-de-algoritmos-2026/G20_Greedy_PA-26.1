@@ -38,4 +38,115 @@
         .color-4 { background-color: #8b5cf6; }
     </style>
 </head>
+<body>
+
+<div class="container">
+    <!-- Visualização dos inputs -->
+    <div class="card">
+        <h2>1. Adicionar Itens</h2>
+        <div class="input-group">
+            <input type="text" id="itemName" placeholder="Nome">
+        </div>
+        <div class="input-group">
+            <input type="number" id="itemWeight" placeholder="Peso">
+            <input type="number" id="itemValue" placeholder="Valor">
+        </div>
+        <button class="btn-add" onclick="addItem()">Adicionar Item</button>
+        
+        <ul id="displayList" class="item-list"></ul>
+
+        <hr>
+        <h2>2. Limite da Mochila</h2>
+        <input type="number" id="maxCapacity" placeholder="Capacidade Total" style="width: 95%;">
+        <button class="btn-calc" onclick="calculate()">Calcular Melhor Valor</button>
+    </div>
+
+    <!-- Resultado -->
+    <div class="card">
+        <h2>Visualização da Mochila</h2>
+        <div id="backpack" class="backpack-visual">
+            <!-- Os itens entrarão aqui via JS -->
+        </div>
+        <div class="stats" id="resultStats">
+            Valor Total: R$ 0.00 <br>
+            Espaço Usado: 0 / 0
+        </div>
+    </div>
+</div>
+
+<script>
+    let items = [];
+
+    function addItem() {
+        const name = document.getElementById('itemName').value;
+        const weight = parseFloat(document.getElementById('itemWeight').value);
+        const value = parseFloat(document.getElementById('itemValue').value);
+
+        if (name && weight > 0 && value > 0) {
+            items.push({ name, weight, value, ratio: value / weight });
+            updateList();
+            // Limpa todos os campos
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemWeight').value = '';
+            document.getElementById('itemValue').value = '';
+        }
+    }
+
+    function updateList() {
+        const list = document.getElementById('displayList');
+        list.innerHTML = items.map(i => `<li>${i.name} - P: ${i.weight} | V: ${i.value} <small>(R$ ${i.ratio.toFixed(1)}/kg)</small></li>`).join('');
+    }
+
+    function calculate() {
+        let capacity = parseFloat(document.getElementById('maxCapacity').value);
+        const initialCapacity = capacity;
+        if (!capacity || items.length === 0) return alert("Adicione itens e defina a capacidade!");
+
+        // Algoritmo de Knapsack
+        const sortedItems = [...items].sort((a, b) => b.ratio - a.ratio);
+        
+        let totalValue = 0;
+        let usedWeight = 0;
+        const backpackDiv = document.getElementById('backpack');
+        backpackDiv.innerHTML = ''; // Limpa mochila visual
+
+        for (let i = 0; i < sortedItems.length; i++) {
+            if (capacity <= 0) break;
+
+            let item = sortedItems[i];
+            let takeWeight, takeValue, label;
+
+            if (item.weight <= capacity) {
+                takeWeight = item.weight;
+                takeValue = item.value;
+                label = `${item.name} (100%)`;
+                capacity -= item.weight;
+            } else {
+                const fraction = capacity / item.weight;
+                takeWeight = capacity;
+                takeValue = item.value * fraction;
+                label = `${item.name} (${(fraction * 100).toFixed(0)}%)`;
+                capacity = 0;
+            }
+
+            totalValue += takeValue;
+            usedWeight += takeWeight;
+
+            // Adiciona elemento visual
+            const heightPercent = (takeWeight / initialCapacity) * 100;
+            const block = document.createElement('div');
+            block.className = `filling color-${i % 5}`;
+            block.style.height = `${heightPercent}%`;
+            block.innerHTML = `${label}<br>R$ ${takeValue.toFixed(2)}`;
+            backpackDiv.appendChild(block);
+        }
+
+        document.getElementById('resultStats').innerHTML = `
+            Valor Total: R$ ${totalValue.toFixed(2)} <br>
+            Espaço Usado: ${usedWeight.toFixed(2)} / ${initialCapacity}
+        `;
+    }
+</script>
+
+</body>
 </html>
