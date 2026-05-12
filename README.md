@@ -13,6 +13,10 @@ A Mochila Fracionária é um problema clássico de otimização resolvido de for
 
 ---
 
+## Apresentação
+
+Para assistir à apresentação, clique [aqui](https://drive.google.com/file/d/1pI0yTBsHnLfIYKOfThjG8YMDskzOxc5q/view?usp=sharing)
+
 ## 🧠 Algoritmo
 
 A estratégia gulosa aplicada segue os passos:
